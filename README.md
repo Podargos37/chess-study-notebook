@@ -1,3 +1,4 @@
+![img.png](img.png)
 This is a personal chess study notebook that provides real-time auto-saving.
 
 ## Getting Started
@@ -12,6 +13,7 @@ This is a personal chess study notebook that provides real-time auto-saving.
 + Arrows and Square Highlights: You can draw arrows by right-clicking and dragging, or highlight squares by right-clicking, but these are not saved.
 
 ---
+![img_1.png](img_1.png)
 실시간 자동 저장 기능을 제공하는 개인용 체스 연구 노트입니다.
 
 ## 시작하기
