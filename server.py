@@ -1,14 +1,25 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
 import os
 
 app = Flask(__name__)
-CORS(app)  # HTML 파일이 파이썬 서버에 접근할 수 있게 허용합니다.
+CORS(app)
 
 FILE_PATH = 'storage.json'
 
-# 1. 저장된 데이터 불러오기
+@app.route('/')
+def index():
+    return send_from_directory('.', 'index.html')
+
+@app.route('/css/<path:filename>')
+def send_css(filename):
+    return send_from_directory('css', filename)
+
+@app.route('/js/<path:filename>')
+def send_js(filename):
+    return send_from_directory('js', filename)
+
 @app.route('/api/load', methods=['GET'])
 def load_data():
     if not os.path.exists(FILE_PATH):
@@ -16,7 +27,7 @@ def load_data():
     with open(FILE_PATH, 'r', encoding='utf-8') as f:
         return jsonify(json.load(f))
 
-# 2. 데이터 저장하기 (파일 덮어쓰기)
+
 @app.route('/api/save', methods=['POST'])
 def save_data():
     data = request.json
@@ -25,5 +36,5 @@ def save_data():
     return jsonify({"status": "success"})
 
 if __name__ == '__main__':
-    print("🚀 체스 저장 서버가 5000번 포트에서 시작되었습니다!")
+    print("체스 저장 서버가 5000번 포트에서 시작되었습니다")
     app.run(port=5000)
