@@ -33,9 +33,11 @@ export function initGraphics(canvas, ctx, game, moveTree, $noteArea, saveToServe
 }
 
 function highlightSquare(ctx, x, y) {
-    const squareSize = 550 / 8;
+    const squareSize = ctx.canvas.width / 8;
+
     const col = Math.floor(x / squareSize);
     const row = Math.floor(y / squareSize);
+
     ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
     ctx.fillRect(col * squareSize, row * squareSize, squareSize, squareSize);
 }
