@@ -17,12 +17,12 @@
                 <button id="flipBtn" class="btn-primary">흑/백 변환</button>
             </div>
 
-            <div class="board-container flex-1 ml-20" id="boardWrapper" style="width: 550px; height: 550px;">
-                <div id="myBoard" style="width: 90%"></div>
-                <canvas id="drawingCanvas" width="550" height="550"
-                        style="position: absolute; top: 0; left: 0; z-index: 50; pointer-events: none;">
+            <div class="board-container flex-1 relative flex items-center justify-center p-4" id="boardWrapper">
+                <div id="myBoard" style="width: 100%; max-width: 70vh;"></div>
+
+                <canvas id="drawingCanvas"
+                        style="position: absolute; z-index: 50; pointer-events: none;">
                 </canvas>
-                <div id="status" class="status-text"></div>
             </div>
         </div>
 
