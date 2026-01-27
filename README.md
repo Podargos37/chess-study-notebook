@@ -1,8 +1,10 @@
 This is a personal chess study notebook that provides real-time auto-saving.
 
 ## Getting Started
-1. Clone this repository.
-2. Double-click and run the 'run.bat' file in the folder.
+1. Download the project to your computer.
+    + Option 1: Go to Releases and download the Source code (zip) of the latest version.
+    + Option 2: Clone this repository.
+2. After extracting the ZIP file, double-click and run the 'run.bat' file in the folder.
 3. The server will run automatically, and the chessboard will appear in your browser.
 
 ## Key Features
@@ -13,8 +15,10 @@ This is a personal chess study notebook that provides real-time auto-saving.
 실시간 자동 저장 기능을 제공하는 개인용 체스 연구 노트입니다.
 
 ## 시작하기
-1. 이 저장소를 저장(Clone)합니다.
-2. 폴더 내의 'run.bat' 파일을 더블 클릭하여 실행합니다.
+1. 이 저장소를 내 컴퓨터로 가져옵니다.
+    + 방법 1: `Releases`에서 최신 버전을 클릭해 소스 코드를 다운로드합니다.
+    + 방법 2: 이 저장소를 복제(Clone)합니다.
+2. 압축을 푼 뒤, 폴더 내의 'run.bat' 파일을 더블 클릭하여 실행합니다.
 3. 자동으로 서버가 실행되고 브라우저에 체스보드가 나타납니다.
 
 ## 주요 기능
