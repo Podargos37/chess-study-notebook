@@ -80,3 +80,13 @@ setTimeout(() => {
 syncCanvasSize();
 
 $('#flipBtn').on('click', board.flip);
+
+$('#undoBtn').on('click', function() {
+    game.undo();
+    board.position(game.fen());
+
+    const fen = game.fen();
+    $noteArea.val(moveTree[fen]?.note || "");
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
