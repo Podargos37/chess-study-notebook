@@ -12,9 +12,26 @@
 <body class="bg-[#0f172a] text-slate-100 h-screen w-screen overflow-hidden font-sans">
     <div class="flex h-full w-full">
         <div class="w-7/12 flex flex-col p-8 gap-6 h-full">
-            <div class="header-container w-full">
+            <div class="header-container w-full relative">
                 <h1 class="text-xl font-bold text-blue-400 tracking-tighter uppercase">CHESS NOTE</h1>
-                <button id="flipBtn" class="btn-primary">흑/백 변환</button>
+
+                <div class="flex items-center gap-2 relative">
+                    <button id="aiBattleBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-all">AI와 대결</button>
+                    <button id="flipBtn" class="btn-primary">흑/백 변환</button>
+
+                    <div id="sidePopup" class="hidden absolute top-12 right-0 bg-slate-800 border border-slate-700 p-3 rounded-xl shadow-2xl z-[100] w-48">
+                        <p class="text-[10px] text-slate-400 mb-2 uppercase font-bold text-center">진영을 선택하세요</p>
+                        <select id="engineSelect" class="w-full bg-slate-700 text-white text-xs p-2 mb-3 rounded border border-slate-600 outline-none">
+                            <option value="stockfish-17.1-lite-single-03e3232.js">stockfish-17.1-lite-single-03e3232 (중급자용)</option>
+                            <option value="stockfish.js">준비중..(선택x)</option>
+                        </select>
+                        <div class="flex flex-col gap-2">
+                            <button class="side-select-btn bg-white text-black text-xs py-2 rounded font-bold hover:bg-slate-200" data-side="w">White (선공)</button>
+                            <button class="side-select-btn bg-black text-white text-xs py-2 rounded font-bold border border-slate-600 hover:bg-slate-900" data-side="b">Black (후공)</button>
+                            <button class="side-select-btn bg-blue-600 text-white text-xs py-2 rounded font-bold hover:bg-blue-500" data-side="r">Random</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="board-container flex-1 relative flex flex-row items-center justify-center p-4" id="boardWrapper">

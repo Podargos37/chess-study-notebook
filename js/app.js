@@ -4,6 +4,7 @@ import { ChessAI } from './chessai.js';
 import { UI } from './ui.js';              // UI 모듈 임포트
 import { initEventListeners } from './events.js'; // 이벤트 모듈 임포트
 
+
 // --- 변수 설정 ---
 let board = null;
 const game = new Chess();
@@ -13,6 +14,8 @@ const canvas = document.getElementById('drawingCanvas');
 const ctx = canvas.getContext('2d');
 let saveTimer = null;
 const aiManager = new ChessAI('stockfish');
+let isBattleMode = false;
+let userSide = 'w';
 
 // --- 초기화 로직 ---
 loadData($noteArea).then(data => { moveTree = data; });
@@ -29,8 +32,67 @@ const handlers = {
     onResize: () => {
         board.resize();
         UI.syncCanvasSize(board);
+    },
+    onStartBattle: (side, engineFile) => {
+        isBattleMode = true; // 대결 모드 활성화
+        aiManager.setPlayEngine(engineFile);
+        // 1. 진영 결정 (랜덤 처리)
+        if (side === 'r') {
+            userSide = Math.random() > 0.5 ? 'w' : 'b';
+        } else {
+            userSide = side; // 'w' 또는 'b'
+        }
+
+        // 2. 보드 방향 설정 (중요!)
+        // 유저가 백이면 white, 흑이면 black이 아래로 오게 설정합니다.
+        const orientation = (userSide === 'w') ? 'white' : 'black';
+        board.orientation(orientation);
+
+        // 3. 게임 초기화
+        game.reset();
+        board.start(); // 기물들을 시작 위치로
+
+        // 4. 초기 UI 업데이트
+        UI.syncCanvasSize(board);
+        $('#noteArea').val("AI와의 대결이 시작되었습니다!");
+
+        // 5. 유저가 흑('b')이라면 AI(백)가 첫 수를 둬야 합니다.
+        if (userSide === 'b') {
+            console.log("AI(백)가 첫 수를 준비합니다.");
+            setTimeout(makeAiMove, 600); // 0.6초 뒤 AI 수 실행
+        }
     }
 };
+
+function updateNoteForPosition(fen, san) {
+    // 이미 해당 FEN에 노트가 있다면 불러오고, 없다면 새로 생성
+    if (!moveTree[fen]) {
+        moveTree[fen] = { move: san, note: "" };
+    }
+
+    // UI(텍스트 영역)에 반영
+    $noteArea.val(moveTree[fen].note);
+
+    // 서버(storage.json)에 저장
+    saveToServer(moveTree);
+}
+
+function makeAiMove() {
+    if (!isBattleMode || game.game_over()) return;
+
+    const fenBefore = game.fen();
+    aiManager.getNextMove(fenBefore, (result) => {
+        const move = game.move(result.bestmove, { sloppy: true });
+        if (move) {
+            board.position(game.fen());
+            const fenAfter = game.fen();
+            updateNoteForPosition(fenAfter, move.san);
+
+            // 여기서도 분석 콜백 안에 다음 로직을 넣지 않습니다.
+            aiManager.analyze(fenAfter, (res) => UI.updateEvalBar(res));
+        }
+    });
+}
 
 // 외부 모듈에서 정의한 이벤트 리스너 등록
 initEventListeners(handlers);
@@ -41,15 +103,17 @@ function onDrop(source, target) {
     if (move === null) return 'snapback';
 
     const fen = game.fen();
+    updateNoteForPosition(fen, move.san);
 
-    // AI 분석 요청 및 UI 업데이트
+    // [수정] 분석은 결과가 올 때마다 UI만 업데이트합니다.
     aiManager.analyze(fen, (result) => {
         UI.updateEvalBar(result);
     });
 
-    if (!moveTree[fen]) moveTree[fen] = { move: move.san, note: "" };
-    $noteArea.val(moveTree[fen].note);
-    saveToServer(moveTree);
+    // [수정] AI 이동은 콜백 밖에서 '딱 한 번만' 호출합니다.
+    if (isBattleMode && !game.game_over()) {
+        setTimeout(makeAiMove, 600);
+    }
 }
 
 function handleUndo() {
