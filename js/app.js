@@ -43,7 +43,7 @@ const handlers = {
             userSide = side; // 'w' 또는 'b'
         }
 
-        // 2. 보드 방향 설정 (중요!)
+        // 2. 보드 방향 설정
         // 유저가 백이면 white, 흑이면 black이 아래로 오게 설정합니다.
         const orientation = (userSide === 'w') ? 'white' : 'black';
         board.orientation(orientation);
@@ -58,8 +58,11 @@ const handlers = {
 
         // 5. 유저가 흑('b')이라면 AI(백)가 첫 수를 둬야 합니다.
         if (userSide === 'b') {
-            console.log("AI(백)가 첫 수를 준비합니다.");
-            setTimeout(makeAiMove, 600); // 0.6초 뒤 AI 수 실행
+            console.log("유저가 흑을 선택했습니다. AI(백)가 첫 수를 시작합니다.");
+            // 엔진이 로드될 시간을 주어야 하므로 약간의 지연 후 실행합니다.
+            setTimeout(() => {
+                makeAiMove();
+            }, 1000);
         }
     }
 };
