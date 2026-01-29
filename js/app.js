@@ -1,7 +1,10 @@
 import { loadData, saveToServer } from './api.js';
 import { initGraphics } from './graphics.js';
 import { ChessAI } from './chessai.js';
+import { UI } from './ui.js';              // UI 모듈 임포트
+import { initEventListeners } from './events.js'; // 이벤트 모듈 임포트
 
+// --- 변수 설정 ---
 let board = null;
 const game = new Chess();
 let moveTree = {};
@@ -9,35 +12,39 @@ const $noteArea = $('#noteArea');
 const canvas = document.getElementById('drawingCanvas');
 const ctx = canvas.getContext('2d');
 let saveTimer = null;
-const aiManager = new ChessAI('stockfish'); // 기본은 스톡피쉬
+const aiManager = new ChessAI('stockfish');
 
-// 초기 데이터 로드
+// --- 초기화 로직 ---
 loadData($noteArea).then(data => { moveTree = data; });
 
 initGraphics(canvas, ctx, game, moveTree, $noteArea, saveToServer, 'boardWrapper');
 
-// 디바운싱
-$noteArea.on('input', function() {
-    const fen = game.fen();
-    if (!moveTree[fen]) moveTree[fen] = { move: "", note: "" };
-    moveTree[fen].note = $(this).val();
+// --- 핵심 핸들러 정의 (이벤트 모듈에 전달용) ---
+const handlers = {
+    onUndo: handleUndo,
+    onFlip: () => {
+        board.flip();
+        UI.syncCanvasSize(board);
+    },
+    onResize: () => {
+        board.resize();
+        UI.syncCanvasSize(board);
+    }
+};
 
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-        saveToServer(moveTree);
-    }, 1000);
-});
+// 외부 모듈에서 정의한 이벤트 리스너 등록
+initEventListeners(handlers);
 
-
+// --- 게임 로직 ---
 function onDrop(source, target) {
     const move = game.move({ from: source, to: target, promotion: 'q' });
     if (move === null) return 'snapback';
 
     const fen = game.fen();
 
-    // 4. 수가 두어질 때마다 AI에게 분석 요청
+    // AI 분석 요청 및 UI 업데이트
     aiManager.analyze(fen, (result) => {
-        updateEvalBar(result);
+        UI.updateEvalBar(result);
     });
 
     if (!moveTree[fen]) moveTree[fen] = { move: move.san, note: "" };
@@ -45,21 +52,22 @@ function onDrop(source, target) {
     saveToServer(moveTree);
 }
 
-function updateEvalBar(result) {
-    const score = result.score; // 예: -0.44
+function handleUndo() {
+    game.undo();
+    board.position(game.fen());
 
-    // 1. 텍스트 업데이트
-    const displayScore = score > 0 ? `+${score.toFixed(1)}` : score.toFixed(1);
-    $('#eval-text').text(displayScore);
+    const fen = game.fen();
+    $noteArea.val(moveTree[fen]?.note || "");
 
-    // 2. 바 높이 조절 (백 승률 기준 시그모이드 근사치)
-    // 점수가 0이면 50%, +3이면 90%, -3이면 10% 정도가 되게 설정
-    const winPercent = 50 + (50 * (2 / (1 + Math.exp(-0.4 * score)) - 1));
-    $('#eval-fill').css('height', `${winPercent}%`);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    aiManager.analyze(fen, (result) => {
+        UI.updateEvalBar(result);
+    });
 
-    console.log(`형세 점수: ${displayScore} (백 승률: ${winPercent.toFixed(1)}%)`);
+    UI.syncCanvasSize(board);
 }
 
+// --- 보드 및 캔버스 설정 ---
 board = Chessboard('myBoard', {
     draggable: true,
     position: 'start',
@@ -71,71 +79,17 @@ board = Chessboard('myBoard', {
     pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
 });
 
-$(window).on('resize', function() {
-    board.resize();
-    syncCanvasSize();
-});
-
-function syncCanvasSize() {
-    const boardEl = document.getElementById('myBoard');
-    const canvas = document.getElementById('drawingCanvas');
-    if (boardEl && canvas) {
-        // 보드의 실제 렌더링 크기를 캔버스에 동기화
-        canvas.width = boardEl.clientWidth;
-        canvas.height = boardEl.clientHeight;
-
-        // 캔버스를 보드 바로 위에 띄우기
-        canvas.style.top = boardEl.offsetTop + "px";
-        canvas.style.left = boardEl.offsetLeft + "px";
-
-        // 보드 자체가 작게 나오면 강제 리사이즈
-        if(board) board.resize();
-    }
-}
-
-function handleUndo() {
-    game.undo();
-    board.position(game.fen());
-
-    const fen = game.fen();
-    $noteArea.val(moveTree[fen]?.note || "");
-
-    // 이전 수로 돌아갔으므로 캔버스와 AI 분석 업데이트
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    aiManager.analyze(fen, (result) => {
-        updateEvalBar(result);
-    });
-}
-
-$('#undoBtn').on('click', handleUndo);
-
-// 3. 키보드 화살표 키 이벤트 연결
-$(window).on('keydown', function(e) {
-    // 노트 영역(textarea)에 입력 중일 때는 작동하지 않게 방지
-    if ($(e.target).is('textarea, input')) return;
-
-    if (e.key === 'ArrowLeft') {
-        handleUndo();
-    }
-});
-
+// 초기 실행 및 리사이즈 대응
 $(document).ready(() => {
-    setTimeout(() => {
-        syncCanvasSize();
-    }, 500);
+    setTimeout(() => UI.syncCanvasSize(board), 500);
 });
 
-$(window).on('resize', function() {
-    board.resize();
-    syncCanvasSize();
+// 노트 영역 자동 저장 (디바운싱)
+$noteArea.on('input', function() {
+    const fen = game.fen();
+    if (!moveTree[fen]) moveTree[fen] = { move: "", note: "" };
+    moveTree[fen].note = $(this).val();
+
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => saveToServer(moveTree), 1000);
 });
-
-setTimeout(() => {
-    board.resize();
-    syncCanvasSize();
-}, 200);
-
-syncCanvasSize();
-
-$('#flipBtn').on('click', board.flip);
-
