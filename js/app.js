@@ -93,6 +93,32 @@ function syncCanvasSize() {
     }
 }
 
+function handleUndo() {
+    game.undo();
+    board.position(game.fen());
+
+    const fen = game.fen();
+    $noteArea.val(moveTree[fen]?.note || "");
+
+    // 이전 수로 돌아갔으므로 캔버스와 AI 분석 업데이트
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    aiManager.analyze(fen, (result) => {
+        updateEvalBar(result);
+    });
+}
+
+$('#undoBtn').on('click', handleUndo);
+
+// 3. 키보드 화살표 키 이벤트 연결
+$(window).on('keydown', function(e) {
+    // 노트 영역(textarea)에 입력 중일 때는 작동하지 않게 방지
+    if ($(e.target).is('textarea, input')) return;
+
+    if (e.key === 'ArrowLeft') {
+        handleUndo();
+    }
+});
+
 $(document).ready(() => {
     setTimeout(() => {
         syncCanvasSize();
@@ -113,12 +139,3 @@ syncCanvasSize();
 
 $('#flipBtn').on('click', board.flip);
 
-$('#undoBtn').on('click', function() {
-    game.undo();
-    board.position(game.fen());
-
-    const fen = game.fen();
-    $noteArea.val(moveTree[fen]?.note || "");
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-});
