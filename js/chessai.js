@@ -7,6 +7,10 @@ export class ChessAI {
         // 2. 대결용 엔진: aiengines 폴더 내부
         this.playWorker = null;
         this.isPlayReady = false;
+
+        // 추가: 점수 계산 시 관점(Perspective)을 고정하기 위한 변수
+        this.currentTurn = 'w';
+
         this.initEvalWorker();
     }
 
@@ -26,6 +30,7 @@ export class ChessAI {
         this.evalWorker.postMessage('uci');
         this.evalWorker.onmessage = (e) => {
             const line = e.data;
+            // score cp 또는 score mate가 포함된 행만 처리
             if (line.includes('score cp') || line.includes('score mate')) {
                 const score = this.parseScore(line);
                 if (this.onEvalCallback) this.onEvalCallback({ score });
@@ -57,6 +62,12 @@ export class ChessAI {
     // [분석] Stockfish 전용 호출
     analyze(fen, callback) {
         this.onEvalCallback = callback;
+
+        // FEN 문자열에서 현재 차례('w' 또는 'b')를 추출합니다.
+        // 예: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" -> 'w'
+        const parts = fen.split(' ');
+        this.currentTurn = parts[1];
+
         this.evalWorker.postMessage('stop');
         this.evalWorker.postMessage(`position fen ${fen}`);
         this.evalWorker.postMessage('go depth 12');
@@ -66,10 +77,8 @@ export class ChessAI {
     getNextMove(fen, callback) {
         if (!this.playWorker || !this.isPlayReady) return;
 
-        // 이전 콜백을 덮어써서 중복 실행을 방지합니다.
         this.onPlayCallback = callback;
 
-        // 엔진 초기화보다는 현재 포지션 설정과 계산 시작만 보냅니다.
         this.playWorker.postMessage('stop');
         this.playWorker.postMessage(`position fen ${fen}`);
         this.playWorker.postMessage('go depth 15');
@@ -77,7 +86,27 @@ export class ChessAI {
 
     parseScore(line) {
         const cpMatch = line.match(/score cp (-?\d+)/);
-        if (cpMatch) return parseInt(cpMatch[1]) / 100;
-        return 0;
+        const mateMatch = line.match(/score mate (-?\d+)/);
+
+        let score = 0;
+
+        if (cpMatch) {
+            // centipawn 점수를 pawn 단위로 변환
+            score = parseInt(cpMatch[1]) / 100;
+        } else if (mateMatch) {
+            // 외통수 상황: 백 승리 방향이면 큰 양수, 흑 승리 방향이면 큰 음수
+            const mateIn = parseInt(mateMatch[1]);
+            score = mateIn > 0 ? 99 : -99;
+        }
+
+        /**
+         * 핵심 로직: 관점 변환
+         * 엔진은 '현재 차례인 쪽'이 유리하면 양수를 보냅니다.
+         * 따라서 흑의 차례('b')일 때 양수가 나오면 백에게는 불리한 것이므로 부호를 반전시킵니다.
+         */
+        if (this.currentTurn === 'b') {
+            return -score;
+        }
+        return score;
     }
 }
