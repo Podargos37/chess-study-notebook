@@ -39,9 +39,20 @@ function onDrop(source, target) {
 }
 
 // 보드 설정 및 이벤트 연결
+// js/app.js 내 보드 설정 부분
 board = Chessboard('myBoard', {
     draggable: true,
     position: 'start',
+    onDragStart: (source, piece, position, orientation) => {
+        // 1. 우클릭(버튼 2)인 경우 기물을 잡지 못하게 함
+        if (window.event && (window.event.buttons === 2 || window.event.button === 2)) {
+            return false;
+        }
+
+        // 2. 게임이 끝났거나 내 차례가 아닐 때 드래그 방지 (기존 로직 유지)
+        if (game.game_over()) return false;
+
+    },
     onDrop: onDrop,
     onSnapEnd: () => board.position(game.fen()),
     pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
@@ -49,6 +60,11 @@ board = Chessboard('myBoard', {
 
 initEventListeners(handlers);
 initGraphics(document.getElementById('drawingCanvas'), document.getElementById('drawingCanvas').getContext('2d'), game, {}, $noteArea, null, 'boardWrapper');
+
+// [추가] 보드가 그려진 후 캔버스 위치를 즉시 맞춥니다.
+setTimeout(() => {
+    UI.syncCanvasSize(board);
+}, 100);
 
 $noteArea.on('input', function() {
     noteManager.saveCurrentNote(game.fen(), $(this).val());

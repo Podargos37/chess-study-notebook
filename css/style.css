@@ -129,3 +129,15 @@ textarea::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
     color: #94a3b8;
     text-align: center;
 }
+
+/*AI와 대결 숨겨진 버튼 속성*/
+.side-select-btn {
+    width: 100%;             /* 부모 너비에 맞춤 */
+    font-size: 0.75rem;      /* text-xs */
+    padding-top: 0.5rem;     /* py-2 */
+    padding-bottom: 0.5rem;
+    border-radius: 0.25rem;  /* rounded */
+    font-weight: 700;        /* font-bold */
+    transition: all 0.2s;    /* 부드러운 호버 효과 */
+    cursor: pointer;
+}

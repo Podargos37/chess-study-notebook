@@ -1,3 +1,4 @@
+// js/api.js
 export function loadData($noteArea) {
     return fetch('http://localhost:5000/api/load')
         .then(res => res.json())
