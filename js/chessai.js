@@ -8,8 +8,9 @@ export class ChessAI {
         this.engine = new ChessEngine();
     }
 
-    setPlayEngine(engineFileName) {
+    setPlayEngine(engineFileName, onReady) {
         this.engine.setEngine(engineFileName);
+        if (typeof onReady === 'function') this.engine.setOnReady(onReady);
     }
 
     analyze(fen, callback) {

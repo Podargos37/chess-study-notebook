@@ -14,7 +14,6 @@ export class GameManager {
 
   startBattle(side, engineFile) {
     this.isBattleMode = true;
-    this.aiManager.setPlayEngine(engineFile);
 
     // 유저 진영 설정 (랜덤 포함)
     this.userSide = side === 'r' ? (Math.random() > 0.5 ? 'w' : 'b') : side;
@@ -28,17 +27,17 @@ export class GameManager {
 
     console.log(`Battle Start: User is ${this.userSide}`);
 
-    // 초기 국면 승률 바 갱신
-    this.aiManager.analyze(this.game.fen(), (result) => UI.updateEvalBar(result));
-
-    // 유저가 흑이면 AI가 백이므로 즉시 첫 수 실행
-    if (this.userSide === 'b') {
-      // 엔진이 준비될 시간을 아주 짧게 준 뒤 실행
-      setTimeout(() => {
+    // 흑 선택 시 엔진 준비된 뒤 AI가 백으로 첫 수 두도록 콜백 등록 후 엔진 로드
+    const onEngineReady = () => {
+      if (this.userSide === 'b') {
         console.log("AI is making the first move as White...");
         this.makeAiMove();
-      }, 500);
-    }
+      }
+    };
+    this.aiManager.setPlayEngine(engineFile, onEngineReady);
+
+    // 초기 국면 승률 바 갱신
+    this.aiManager.analyze(this.game.fen(), (result) => UI.updateEvalBar(result));
   }
 
   makeAiMove() {
@@ -56,9 +55,8 @@ export class GameManager {
   }
 
   afterMove(fen, san) {
-    // 수 둔 후 노트 업데이트 및 UI 동기화
+    // 수 둔 후 노트 업데이트 및 승률 바만 갱신 (보드/캔버스 리사이즈는 하지 않음 → 잔상/버벅임 방지)
     this.noteManager.updateNote(fen, san);
-    UI.syncCanvasSize(this.board);
     // 승률 바 갱신 (평가 엔진으로 현재 국면 점수 계산)
     this.aiManager.analyze(fen, (result) => UI.updateEvalBar(result));
   }

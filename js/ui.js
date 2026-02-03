@@ -12,27 +12,27 @@ export const UI = {
 
     syncCanvasSize(board) {
         const canvas = document.getElementById('drawingCanvas');
-        // 중요: #myBoard 전체가 아니라 내부의 실제 격자판(.board-b72b1)을 타겟팅합니다.
         const boardGrid = document.querySelector('#myBoard .board-b72b1');
         const boardWrapper = document.getElementById('boardWrapper');
 
-        if (canvas && boardGrid && boardWrapper) {
-            const gridRect = boardGrid.getBoundingClientRect();
-            const wrapperRect = boardWrapper.getBoundingClientRect();
+        if (!canvas || !boardGrid || !boardWrapper) return;
 
-            // 1. 캔버스 버퍼는 정수 픽셀, 표시 크기는 격자와 정확히 일치 (소수 픽셀 대응)
-            const bufferW = Math.round(gridRect.width);
-            const bufferH = Math.round(gridRect.height);
+        const gridRect = boardGrid.getBoundingClientRect();
+        const wrapperRect = boardWrapper.getBoundingClientRect();
+        const bufferW = Math.round(gridRect.width);
+        const bufferH = Math.round(gridRect.height);
+
+        // 크기/위치가 실제로 바뀐 경우에만 갱신 (매 수마다 리사이즈·캔버스 초기화 방지 → 잔상/버벅임 방지)
+        const sizeChanged = canvas.width !== bufferW || canvas.height !== bufferH;
+        if (sizeChanged) {
             canvas.width = bufferW;
             canvas.height = bufferH;
-            canvas.style.width = gridRect.width + 'px';
-            canvas.style.height = gridRect.height + 'px';
-
-            // 2. 캔버스 위치를 격자판 바로 위로 정렬 (오프셋 보정)
-            canvas.style.top = (gridRect.top - wrapperRect.top) + "px";
-            canvas.style.left = (gridRect.left - wrapperRect.left) + "px";
-
             if (board) board.resize();
         }
+
+        canvas.style.width = gridRect.width + 'px';
+        canvas.style.height = gridRect.height + 'px';
+        canvas.style.top = (gridRect.top - wrapperRect.top) + "px";
+        canvas.style.left = (gridRect.left - wrapperRect.left) + "px";
     }
 };

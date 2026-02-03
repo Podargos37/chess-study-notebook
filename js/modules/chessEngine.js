@@ -5,11 +5,13 @@ export class ChessEngine {
         this.worker = null;
         this.isReady = false;
         this.onPlayCallback = null;
+        this.onReadyCallback = null;
     }
 
     setEngine(engineFileName) {
         if (this.worker) this.worker.terminate();
         this.isReady = false;
+        this.onReadyCallback = null;
 
         // 경로를 상대 경로로 바꿔보세요 (현재 HTML 위치 기준)
         const enginePath = `./js/aiengines/${engineFileName}`;
@@ -17,12 +19,23 @@ export class ChessEngine {
         this.init();
     }
 
+    /** 엔진이 준비되면 한 번 호출될 콜백 등록 (흑 선택 시 AI 선수용) */
+    setOnReady(callback) {
+        this.onReadyCallback = callback;
+    }
+
     init() {
         this.worker.postMessage('uci');
         this.worker.onmessage = (e) => {
             const line = e.data;
             if (line === 'uciok') this.worker.postMessage('isready');
-            if (line === 'readyok') this.isReady = true;
+            if (line === 'readyok') {
+                this.isReady = true;
+                if (this.onReadyCallback) {
+                    this.onReadyCallback();
+                    this.onReadyCallback = null;
+                }
+            }
             if (line.includes('bestmove')) {
                 const move = line.split(' ')[1];
                 if (this.onPlayCallback) this.onPlayCallback({ bestmove: move });
