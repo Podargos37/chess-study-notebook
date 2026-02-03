@@ -20,9 +20,13 @@ export const UI = {
             const gridRect = boardGrid.getBoundingClientRect();
             const wrapperRect = boardWrapper.getBoundingClientRect();
 
-            // 1. 캔버스 크기를 격자판 크기와 1:1로 맞춤
-            canvas.width = gridRect.width;
-            canvas.height = gridRect.height;
+            // 1. 캔버스 버퍼는 정수 픽셀, 표시 크기는 격자와 정확히 일치 (소수 픽셀 대응)
+            const bufferW = Math.round(gridRect.width);
+            const bufferH = Math.round(gridRect.height);
+            canvas.width = bufferW;
+            canvas.height = bufferH;
+            canvas.style.width = gridRect.width + 'px';
+            canvas.style.height = gridRect.height + 'px';
 
             // 2. 캔버스 위치를 격자판 바로 위로 정렬 (오프셋 보정)
             canvas.style.top = (gridRect.top - wrapperRect.top) + "px";

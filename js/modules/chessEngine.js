@@ -10,7 +10,9 @@ export class ChessEngine {
     setEngine(engineFileName) {
         if (this.worker) this.worker.terminate();
         this.isReady = false;
-        const enginePath = `${window.location.origin}/js/aiengines/${engineFileName}`;
+
+        // 경로를 상대 경로로 바꿔보세요 (현재 HTML 위치 기준)
+        const enginePath = `./js/aiengines/${engineFileName}`;
         this.worker = new Worker(enginePath);
         this.init();
     }
