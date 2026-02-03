@@ -1,7 +1,7 @@
 // js/api.js
 import 'https://cdn.jsdelivr.net/gh/pocketbase/js-sdk@master/dist/pocketbase.umd.js';
 
-export const PB_URL = 'http://115.68.192.54:8090';
+export const PB_URL = 'https://115.68.192.54.nip.io';
 export const pb = new PocketBase(PB_URL);
 const COLLECTION_NAME = 'chess';
 
