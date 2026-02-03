@@ -10,8 +10,11 @@
 </head>
 
 <body class="bg-[#0f172a] text-slate-100 h-screen w-screen overflow-hidden font-sans">
+    <!--전체 화면을 좌우로 나누는 시작점-->
     <div class="flex h-full w-full">
+        <!--왼쪽 체스판 영역-->
         <div class="w-7/12 flex flex-col p-8 gap-6 h-full">
+            <!--상단 헤더(로고 및 로그인과 버튼들)-->
             <div class="header-container w-full relative flex justify-between items-center">
                 <div class="flex items-center gap-4">
                     <h1 class="text-xl font-bold text-blue-400 tracking-tighter uppercase">CHESS NOTE</h1>
@@ -25,7 +28,7 @@
                 <div class="flex items-center gap-2 relative">
                     <button id="aiBattleBtn" class="bg-indigo-600 btn-primary">AI와 대결</button>
                     <button id="flipBtn" class="btn-primary">흑/백 변환</button>
-
+                    <!--ai 대결 누르면 나오는 팝업창-->
                     <div id="sidePopup" class="hidden absolute top-full mt-4 right-0 bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-2xl z-[150] w-80">
                         <h3 class="text-indigo-400 font-bold mb-4 text-center text-sm">AI BATTLE SETTING</h3>
                         <div class="flex flex-col gap-4">
@@ -41,7 +44,7 @@
                     </div>
                 </div>
             </div>
-
+            <!--체스판과 평가바 묶음-->
             <div id="boardWrapper" class="board-container flex-1 relative flex flex-row items-center justify-center p-4">
                 <div class="eval-container flex-shrink-0">
                     <div id="eval-bar"><div id="eval-fill"></div></div>
@@ -51,7 +54,7 @@
                 <canvas id="drawingCanvas" style="position: absolute; z-index: 100; pointer-events: none;"></canvas>
             </div>
         </div>
-
+        <!--오른 쪽 노트 영역-->
         <div class="w-5/12 h-full bg-slate-800/40 border-l border-slate-700 flex flex-col p-8">
             <div class="flex items-center gap-2 mb-6 text-slate-200">
                 <div class="w-1 h-6 bg-blue-500 rounded-full"></div>
@@ -61,7 +64,7 @@
             <button id="undoBtn" class="btn-save mt-4">↩ 한 수 뒤로 (Undo)</button>
         </div>
     </div>
-
+    <!--로그인 모달 창-->
     <div id="loginModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] items-center justify-center" style="display: none;">
         <div class="bg-slate-800 border border-slate-700 p-8 rounded-2xl shadow-2xl w-80">
             <h2 id="modalTitle" class="text-xl font-bold mb-6 text-center text-blue-400">LOGIN</h2>
@@ -77,7 +80,7 @@
             </div>
         </div>
     </div>
-
+    <!--스크립트 로드 부분-->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
