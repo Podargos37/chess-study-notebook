@@ -9,7 +9,7 @@ import { GameManager } from './modules/gameManager.js';
 const game = new Chess();
 const $noteArea = $('#noteArea');
 const aiManager = new ChessAI();
-const noteManager = new NoteManager($noteArea);
+const noteManager = new NoteManager($noteArea, game);
 let board = null;
 let gameManager = null;
 
